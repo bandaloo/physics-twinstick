@@ -53,7 +53,6 @@ function constructors.newEnemyBasic(x, y, level)
   --get the settings from the world, if there are any.
   if(level ~= nil) then level:setObject(enemy) end
 
-
   enemy.health = 10
   enemy.body = love.physics.newBody(world, x, y, 'dynamic')
   enemy.shape = love.physics.newRectangleShape(0, 0, 40, 40)
@@ -75,6 +74,10 @@ function constructors.newBullet(x, y)
   bullet.color = {math.random(255), math.random(255), math.random(255)}
   bullet.destroy = b.bulletDestroy
   bullet.collisions = {enemy = {}}
+
+  --get the settings from the world, if there are any.
+  if(level ~= nil) then level:setObject(bullet) end
+
   bullet.health = 1
   bullet.lifetime = 10
   bullet.body = love.physics.newBody(world, x, y, 'dynamic')
@@ -95,6 +98,10 @@ function constructors.newPlayer(x, y)
   player.kind = 'player'
   player.color = {255, 0, 0}
   player.collisions = {}
+
+  --get the settings from the world, if there are any.
+  if(level ~= nil) then level:setObject(player) end
+
   player.health = 1
   player.body = love.physics.newBody(world, screenWidth / 2, screenHeight / 2, 'dynamic')
   player.shape = love.physics.newCircleShape(25)
@@ -110,6 +117,10 @@ function constructors.newGround(x, y, width, height)
   local ground = {}
   ground.kind = 'passive'
   ground.collisions = {}
+
+  --get the settings from the world, if there are any.
+  if(level ~= nil) then level:setObject(ground) end
+
   ground.health = 1
   ground.body = love.physics.newBody(world, x, y)
   ground.shape = love.physics.newRectangleShape(width, height)
@@ -124,6 +135,10 @@ function constructors.newBorder(left, top, right, bottom)
   local border = {}
   border.kind = 'passive'
   border.collisions = {}
+
+  --get the settings from the world, if there are any.
+  if(level ~= nil) then level:setObject(border) end
+
   border.health = 1
   border.body = love.physics.newBody(world, x, y, 'static') -- change x, y
   -- can change points with function for rounded edges
@@ -149,6 +164,10 @@ end
 function constructors.newSpark(x, y)
   local spark = {}
   spark.kind = 'spark'
+
+  --get the settings from the world, if there are any.
+  if(level ~= nil) then level:setObject(spark) end
+
   spark.x = x
   spark.y = y
   spark.xvel = math.random(-200, 200)
@@ -164,6 +183,10 @@ end
 function constructors.newExplosion(x, y)
   local explosion = {}
   explosion.kind = 'explosion'
+
+  --get the settings from the world, if there are any.
+  if(level ~= nil) then level:setObject(explosion) end
+
   explosion.x = x
   explosion.y = y
   explosion.xvel = 0
