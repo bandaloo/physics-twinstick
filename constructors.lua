@@ -8,15 +8,51 @@ local constructors = {}
 b.link(constructors)
 i.link(constructors)
 
+function constructors.newLevel()
+  local level = {}
+  level.kind = 'level'
+  level.solidBoundries = true
+  level.relationships = {
+    enemy = {
+      destroy = b.enemyDestroy,
+      collisions = {bullet = {i.reduceHealth,  i.setPulse, i.eliminateOthers}},
+      behaviors = {b.followf, b.reducePulse},
+    },
+    bullet = {
+      destroy = b.bulletDestroy,
+      collisions = {enemy = {}},
+      behaviors = {},
+    },
+    player = {
+      collisions = {},
+    }
+  }
+  level.setObject = function(self, object)
+    if(self.relationships[object.kind] ~= nil) then
+      for key, value in pairs(self.relationships[object.kind]) do
+        object[key] = value
+      end
+    end
+  end
+  return level
+end
+
 -- objects
 
-function constructors.newEnemyBasic(x, y)
+function constructors.newEnemyBasic(x, y, level)
   local enemy = {}
   enemy.kind = 'enemy'
   enemy.color = {0, 200, 200}
-  enemy.destroy = b.enemyDestroy
+
+  --defaults
+  enemy.destroy =  b.enemyDestroy
   enemy.collisions = {bullet = {i.reduceHealth, i.changeColor, i.setPulse, i.eliminateOther}}
   enemy.behaviors = {b.followf, b.reducePulse}
+
+  --get the settings from the world, if there are any.
+  if(level ~= nil) then level:setObject(enemy) end
+
+
   enemy.health = 10
   enemy.body = love.physics.newBody(world, x, y, 'dynamic')
   enemy.shape = love.physics.newRectangleShape(0, 0, 40, 40)

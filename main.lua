@@ -20,11 +20,13 @@ function love.load(arg)
   objects = {}
   particles = {}
 
+  level = c.newLevel()
   objects.ground = c.newGround(screenWidth / 2, screenHeight - 20, screenWidth, 20)
   objects.player = c.newPlayer(screenWidth / 2, screenHeight / 2)
-  objects.enemy = c.newEnemyBasic(100, 100)
+  objects.enemy = c.newEnemyBasic(100, 100, level)
   objects.enemy2 = c.newEnemyBasic(100, 150)
-  objects.enemy3 = c.newEnemyBasic(150, 100)
+  objects.enemy3 = c.newEnemyBasic(150, 100, level)
+
 end
 
 function love.update(dt)
