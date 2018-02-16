@@ -10,6 +10,9 @@ function love.load(arg)
   screenWidth = love.graphics.getWidth()
   screenHeight = love.graphics.getHeight()
 
+  borderWidth = 60
+  borderHeight = 60
+
   canShootTimerMax = 0.05
   canShootTimer = canShootTimerMax
   canShoot = true
@@ -20,9 +23,13 @@ function love.load(arg)
   objects = {}
   particles = {}
 
+  -- objects.ground = c.newGround(screenWidth / 2, screenHeight - 20, screenWidth, 20)
   level = c.newLevel()
-  objects.ground = c.newGround(screenWidth / 2, screenHeight - 20, screenWidth, 20)
+  objects.border = c.newBorder(borderWidth, borderHeight, screenWidth - borderWidth, screenHeight - borderHeight)
   objects.player = c.newPlayer(screenWidth / 2, screenHeight / 2)
+  for i = 0, 10 do
+    table.insert(objects, c.newEnemyBasic(80 + i * 60, 300))
+  end
   objects.enemy = c.newEnemyBasic(100, 100, level)
   objects.enemy2 = c.newEnemyBasic(100, 150)
   objects.enemy3 = c.newEnemyBasic(150, 100, level)
@@ -69,6 +76,7 @@ function love.update(dt)
     end
   end
 
+  -- TODO use the helper functions to clean this up
   local playerx, playery = objects.player.body:getPosition()
   local distance = math.sqrt((mousex - playerx) ^ 2 + (mousey - playery) ^ 2)
   local shotx = (mousex - playerx) / distance
@@ -76,9 +84,10 @@ function love.update(dt)
   local bulletx = playerx + shotx * 40
   local bullety = playery + shoty * 40
 
-  if love.keyboard.isDown("right", "d") then --press the right arrow key to push the player to the right
+  -- TODO make this directional
+  if love.keyboard.isDown("right", "d") then
     objects.player.body:applyForce(1500, 0)
-  elseif love.keyboard.isDown("left", "a") then --press the left arrow key to push the player to the left
+  elseif love.keyboard.isDown("left", "a") then
     objects.player.body:applyForce(-1500, 0)
   end
   if love.keyboard.isDown("up", "w") then
@@ -108,8 +117,8 @@ function love.draw(dt)
   -- love.graphics.printf(test1, 0, 0, 100, 'left')
   love.graphics.setColor(72, 160, 14)
   -- love.graphics.setLineStyle('rough')
-  love.graphics.setLineWidth(5)
-  love.graphics.line(100, 200, 300, 400)
+  -- love.graphics.setLineWidth(5)
+  -- love.graphics.line(100, 200, 300, 400)
   -- if hit then love.graphics.printf('hit', 0, 100, 100, 'left') end
   for key, object in pairs(objects) do
     object:draw()

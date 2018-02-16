@@ -22,7 +22,7 @@ function behaviors.reducePulse(self)
     self.pulse = self.pulse - gdt * 20
   end
   if self.pulse < self.fuzziness then
-    self.pulse = 0
+    self.pulse = self.fuzziness
   end
 end
 
