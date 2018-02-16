@@ -1,9 +1,12 @@
 local c = require "constructors"
 local h = require "helpers"
+local d = require "draw"
 
 debug = true
 
 function love.load(arg)
+  love.graphics.setBackgroundColor(255, 255, 255)
+
   screenWidth = love.graphics.getWidth()
   screenHeight = love.graphics.getHeight()
 
@@ -19,7 +22,9 @@ function love.load(arg)
 
   objects.ground = c.newGround(screenWidth / 2, screenHeight - 20, screenWidth, 20)
   objects.player = c.newPlayer(screenWidth / 2, screenHeight / 2)
-  objects.enemy = c.newEnemyBasic()
+  objects.enemy = c.newEnemyBasic(100, 100)
+  objects.enemy2 = c.newEnemyBasic(100, 150)
+  objects.enemy3 = c.newEnemyBasic(150, 100)
 end
 
 function love.update(dt)
@@ -69,14 +74,14 @@ function love.update(dt)
   local bullety = playery + shoty * 40
 
   if love.keyboard.isDown("right", "d") then --press the right arrow key to push the player to the right
-    objects.player.body:applyForce(800, 0)
+    objects.player.body:applyForce(1500, 0)
   elseif love.keyboard.isDown("left", "a") then --press the left arrow key to push the player to the left
-    objects.player.body:applyForce(-800, 0)
+    objects.player.body:applyForce(-1500, 0)
   end
   if love.keyboard.isDown("up", "w") then
-    objects.player.body:applyForce(0, -800)
+    objects.player.body:applyForce(0, -1500)
   elseif love.keyboard.isDown("down", "s") then
-    objects.player.body:applyForce(0, 800)
+    objects.player.body:applyForce(0, 1500)
   end
   if love.keyboard.isDown("space") then
     objects.player.body:setPosition(650/2, 650/2)
@@ -95,18 +100,16 @@ end
 
 function love.draw(dt)
   -- love.graphics.setShader(myShader)
-  -- love.graphics.printf(objects.enemy.health, 0, 0, 100, 'left')
+  -- testtable = {3, 2}
+  -- test1, test2 = unpack(testtable)
+  -- love.graphics.printf(test1, 0, 0, 100, 'left')
   love.graphics.setColor(72, 160, 14)
+  -- love.graphics.setLineStyle('rough')
+  love.graphics.setLineWidth(5)
+  love.graphics.line(100, 200, 300, 400)
   -- if hit then love.graphics.printf('hit', 0, 100, 100, 'left') end
   for key, object in pairs(objects) do
-    love.graphics.setColor(object.color[1], object.color[2], object.color[3])
-    if object.shape:getType() == 'circle' then
-      love.graphics.circle('fill', object.body:getX(), object.body:getY(), object.shape:getRadius())
-    elseif object.shape:getType() == 'polygon' then
-      love.graphics.polygon('fill', object.body:getWorldPoints(object.shape:getPoints()))
-    elseif object.shape:getType() == 'chain' then
-      love.graphics.line(object.body:getWorldPoints(object.shape:getPoints()))
-    end
+    object:draw()
   end
 
   for key, particle in pairs(particles) do

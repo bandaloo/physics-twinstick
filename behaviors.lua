@@ -17,6 +17,11 @@ function behaviors.followf(self)
   self.body:applyForce(x * 30, y * 30)
 end
 
+function behaviors.reducePulse(self)
+  self.pulse = self.pulse - 0 -- take into account dt
+end
+
+-- function probably not needed anymore
 function behaviors.checkIfDead(self)
   if self.health <= 0 then
     self.destroy(self)

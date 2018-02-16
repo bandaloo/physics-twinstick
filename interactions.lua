@@ -11,6 +11,10 @@ function interactions.reduceHealth(self, other)
   self.health = self.health - 1
 end
 
+function interactions.setPulse(self, other)
+  self.pulse = 10
+end
+
 function interactions.changeColor(self, other)
   self.color = {math.random(255), math.random(255), math.random(255)}
 end

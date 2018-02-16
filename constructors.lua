@@ -1,6 +1,7 @@
 --local b = require "behaviors"
 local i = require "interactions"
 local b = require "behaviors"
+local d = require "draw"
 
 local constructors = {}
 
@@ -14,10 +15,10 @@ function constructors.newEnemyBasic(x, y)
   enemy.kind = 'enemy'
   enemy.color = {0, 200, 200}
   enemy.destroy = b.enemyDestroy
-  enemy.collisions = {bullet = {i.reduceHealth, i.changeColor}}
+  enemy.collisions = {bullet = {i.reduceHealth, i.changeColor, i.setPulse}}
   enemy.behaviors = {b.followf}
   enemy.health = 10
-  enemy.body = love.physics.newBody(world, 100, 100, 'dynamic')
+  enemy.body = love.physics.newBody(world, x, y, 'dynamic')
   enemy.shape = love.physics.newRectangleShape(0, 0, 40, 40)
   enemy.fixture = love.physics.newFixture(enemy.body, enemy.shape, 2)
   enemy.fixture:setRestitution(0.1)
@@ -25,6 +26,8 @@ function constructors.newEnemyBasic(x, y)
   enemy.body:setLinearDamping(0.4)
   enemy.body:setLinearVelocity(0, 0)
   enemy.body:setMass(0.1)
+  enemy.pulse = 1
+  enemy.draw = function(self) d.gradientLine(self, 10, 8, self.pulse) end
   return enemy
 end
 
@@ -45,6 +48,7 @@ function constructors.newBullet(x, y)
   bullet.fixture:setUserData(bullet)
   bullet.fixture:setCategory(2)
   bullet.fixture:setMask(2)
+  bullet.draw = function(self) d.gradientLine(self, 5, 3, 0.5) end
   return bullet
 end
 
@@ -60,6 +64,7 @@ function constructors.newPlayer(x, y)
   player.fixture:setRestitution(0.1)
   player.body:setLinearDamping(10)
   player.fixture:setUserData(player)
+  player.draw = function(self) d.gradientLine(self, 9, 7, 1) end
   return player
 end
 
@@ -73,6 +78,7 @@ function constructors.newGround(x, y, width, height)
   ground.fixture = love.physics.newFixture(ground.body, ground.shape) --attach shape to body
   ground.fixture:setUserData(ground)
   ground.color = {72, 160, 14}
+  ground.draw = function(self) d.gradientLine(self, 9, 7, 1) end
   return ground
 end
 
