@@ -2,6 +2,7 @@
 local i = require "interactions"
 local b = require "behaviors"
 local d = require "draw"
+local h = require "helpers"
 
 local constructors = {}
 
@@ -81,6 +82,30 @@ function constructors.newGround(x, y, width, height)
   ground.color = {72, 160, 14}
   ground.draw = function(self) d.gradientLine(self, 9, 7, 1) end
   return ground
+end
+
+function constructors.newBorder(left, top, right, bottom)
+  local border = {}
+  border.kind = 'passive'
+  border.collisions = {}
+  border.health = 1
+  border.body = love.physics.newBody(world, x, y, 'static') -- change x, y
+  -- can change points with function for rounded edges
+  -- local points = {left, top, left + right, top, left + right, bottom, left, bottom}
+  local points1 = h.circleSectionPoints(right, bottom, 20, 30, 0, math.pi * 1/2)
+  local points2 = h.circleSectionPoints(left, bottom, 20, 30,  math.pi * 1/2, math.pi)
+  local points3 = h.circleSectionPoints(left, top, 20, 30, math.pi, math.pi * 3/2)
+  local points4 = h.circleSectionPoints(right, top, 20, 30, math.pi * 3/2, math.pi * 2)
+
+  local points = h.combine(points1, points2, points3, points4)
+
+  -- local points = {0, 0, 10, 10, 20, 20, 30, 30, 40, 40, 100, 2}
+  border.shape = love.physics.newChainShape(true, points)
+  border.fixture = love.physics.newFixture(border.body, border.shape)
+  border.fixture:setUserData(border)
+  border.color = {110, 94, 255}
+  border.draw = function(self) d.gradientLine(self, 12, 10, 1) end
+  return border
 end
 
 -- particles

@@ -12,6 +12,8 @@ function draw.gradientLine(object, layers, center, scalar)
       love.graphics.circle('line', object.body:getX(), object.body:getY(), object.shape:getRadius())
     elseif object.shape:getType() == 'polygon' then
       love.graphics.polygon('line', object.body:getWorldPoints(object.shape:getPoints()))
+    elseif object.shape:getType() == 'chain' then
+      love.graphics.line(object.shape:getPoints())
     end
   end
 end
