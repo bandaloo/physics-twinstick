@@ -15,8 +15,8 @@ function constructors.newEnemyBasic(x, y)
   enemy.kind = 'enemy'
   enemy.color = {0, 200, 200}
   enemy.destroy = b.enemyDestroy
-  enemy.collisions = {bullet = {i.reduceHealth, i.changeColor, i.setPulse}}
-  enemy.behaviors = {b.followf}
+  enemy.collisions = {bullet = {i.reduceHealth, i.changeColor, i.setPulse, i.eliminateOther}}
+  enemy.behaviors = {b.followf, b.reducePulse}
   enemy.health = 10
   enemy.body = love.physics.newBody(world, x, y, 'dynamic')
   enemy.shape = love.physics.newRectangleShape(0, 0, 40, 40)
@@ -26,7 +26,8 @@ function constructors.newEnemyBasic(x, y)
   enemy.body:setLinearDamping(0.4)
   enemy.body:setLinearVelocity(0, 0)
   enemy.body:setMass(0.1)
-  enemy.pulse = 1
+  enemy.fuzziness = 1
+  enemy.pulse = enemy.fuzziness
   enemy.draw = function(self) d.gradientLine(self, 10, 8, self.pulse) end
   return enemy
 end
@@ -74,8 +75,8 @@ function constructors.newGround(x, y, width, height)
   ground.collisions = {}
   ground.health = 1
   ground.body = love.physics.newBody(world, x, y)
-  ground.shape = love.physics.newRectangleShape(width, height) --make a rectangle with a width of 650 and a height of 50
-  ground.fixture = love.physics.newFixture(ground.body, ground.shape) --attach shape to body
+  ground.shape = love.physics.newRectangleShape(width, height)
+  ground.fixture = love.physics.newFixture(ground.body, ground.shape)
   ground.fixture:setUserData(ground)
   ground.color = {72, 160, 14}
   ground.draw = function(self) d.gradientLine(self, 9, 7, 1) end

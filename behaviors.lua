@@ -18,15 +18,20 @@ function behaviors.followf(self)
 end
 
 function behaviors.reducePulse(self)
-  self.pulse = self.pulse - 0 -- take into account dt
+  if self.pulse > self.fuzziness then
+    self.pulse = self.pulse - gdt * 20
+  end
+  if self.pulse < self.fuzziness then
+    self.pulse = 0
+  end
 end
 
 -- function probably not needed anymore
-function behaviors.checkIfDead(self)
-  if self.health <= 0 then
-    self.destroy(self)
-  end
-end
+-- function behaviors.checkIfDead(self)
+--   if self.health <= 0 then
+--     self.destroy(self)
+--   end
+-- end
 
 function behaviors.enemyDestroy(self)
   for i = 1, 16 do

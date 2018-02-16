@@ -28,6 +28,7 @@ function love.load(arg)
 end
 
 function love.update(dt)
+  gdt = dt
   world:update(dt)
 
   local mousex, mousey = love.mouse.getPosition()
@@ -90,7 +91,7 @@ function love.update(dt)
 
   if canShoot then
     local bullet = c.newBullet(bulletx, bullety)
-    bullet.body:setLinearVelocity(shotx * 200, shoty * 200)
+    bullet.body:setLinearVelocity(shotx * 400, shoty * 400)
     table.insert(objects, bullet)
     canShootTimer = canShootTimerMax
     canShoot = false

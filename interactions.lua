@@ -12,7 +12,7 @@ function interactions.reduceHealth(self, other)
 end
 
 function interactions.setPulse(self, other)
-  self.pulse = 10
+  self.pulse = 3
 end
 
 function interactions.changeColor(self, other)
