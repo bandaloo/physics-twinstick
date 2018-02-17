@@ -18,24 +18,25 @@ local draw = {}
 --   end
 -- end
 
+-- all these transformations should be in a different module; i was being lazy
 function draw.worldToScreenScalar(c)
-  return c / worldToScreenRatio
+  return c / (worldToScreenRatio * zoomAmount)
 end
 
 function draw.worldToScreenX(x)
-  return x / worldToScreenRatio + xScreenOffset
+  return x / (worldToScreenRatio * zoomAmount) + xScreenOffset
 end
 
 function draw.worldToScreenY(y)
-  return y / worldToScreenRatio + yScreenOffset
+  return y / (worldToScreenRatio * zoomAmount) + yScreenOffset
 end
 
 function draw.worldToScreenPoint(x, y)
   return draw.worldToScreenX(x), draw.worldToScreenY(y)
 end
 
-function draw.screenToWorldPoint(x, y) -- need to change this to include offset
-  return (x - xScreenOffset) * worldToScreenRatio, (y - yScreenOffset) * worldToScreenRatio
+function draw.screenToWorldPoint(x, y)
+  return (x - xScreenOffset) * worldToScreenRatio * zoomAmount, (y - yScreenOffset) * worldToScreenRatio * zoomAmount
 end
 
 function draw.worldToScreenPoints(points)
@@ -43,7 +44,7 @@ function draw.worldToScreenPoints(points)
   local offsets = {xScreenOffset, yScreenOffset}
   local test = 0
   for i, value in ipairs(points) do
-    table.insert(screenPoints, value / worldToScreenRatio + offsets[(i - 1) % 2 + 1])
+    table.insert(screenPoints, value / (worldToScreenRatio * zoomAmount) + offsets[(i - 1) % 2 + 1])
   end
   return screenPoints
 end
@@ -77,7 +78,7 @@ function draw.gradientLine(object, layers, center, scalar, fill)
   end
   love.graphics.setColor(object.color[1], object.color[2], object.color[3], alpha)
   for i = 0, center do
-    love.graphics.setLineWidth(scalar * (layers - i) / worldToScreenRatio)
+    love.graphics.setLineWidth(scalar * (layers - i) / (worldToScreenRatio * zoomAmount))
     if i == center then
       love.graphics.setColor(object.color[1], object.color[2], object.color[3], 255)
     end

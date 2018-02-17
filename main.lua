@@ -1,11 +1,12 @@
 local c = require "constructors"
 local h = require "helpers"
 local d = require "draw"
+local v = require "view"
 
 debug = true
 
 function love.load(arg)
-  love.window.setFullscreen(true)
+  -- love.window.setFullscreen(true)
   love.graphics.setBackgroundColor(255, 255, 255)
 
   screenWidth = love.graphics.getWidth()
@@ -14,12 +15,21 @@ function love.load(arg)
   worldWidth = 1280
   worldHeight = 720
 
+  cameraX = worldWidth / 2
+  cameraY = worldHeight / 2
+
+  zoomAmount = 1
+
   worldToScreenRatio = worldWidth / screenWidth
 
   -- xScreenOffset = screenWidth / 8 -- this is just a test
   -- yScreenOffset = screenHeight / 8
+  xWorldOffset = 0
+  yWorldOffset = 0
   xScreenOffset = 0
   yScreenOffset = 0
+
+  v.setOffsets()
 
   borderWidth = 60
   borderHeight = 60
@@ -36,7 +46,7 @@ function love.load(arg)
   objects = {}
   particles = {}
 
-  objects.ground = c.newGround(screenWidth / 2, screenHeight - 20, screenWidth, 20)
+  -- objects.ground = c.newGround(screenWidth / 2, screenHeight - 20, screenWidth, 20)
   level = c.newLevel()
   objects.border = c.newBorder(borderWidth, borderHeight, worldWidth - borderWidth, worldHeight - borderHeight)
   objects.player = c.newPlayer(worldWidth / 2, worldHeight / 2)
@@ -52,6 +62,8 @@ function love.update(dt)
   gdt = dt
   world:update(dt)
 
+  v.positionCamera(objects.player.body:getX(), objects.player.body:getY())
+  v.zoomCamera(0.1)
   -- worldToScreenRatio = worldToScreenRatio + dt * 0.1 -- this is just a test get rid of this
 
   local mousex, mousey = d.screenToWorldPoint(love.mouse.getPosition())
@@ -133,7 +145,7 @@ function love.draw(dt)
   -- love.graphics.setShader(myShader)
   -- testtable = {3, 2}
   -- test1, test2 = unpack(testtable)
-  love.graphics.printf(objects.player.body:getX(), 0, 0, 100, 'left')
+  love.graphics.printf(zoomAmount, 0, 0, 200, 'left')
   love.graphics.setColor(72, 160, 14)
   -- love.graphics.setLineStyle('rough')
   -- love.graphics.setLineWidth(5)
