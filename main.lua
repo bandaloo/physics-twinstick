@@ -16,8 +16,10 @@ function love.load(arg)
 
   worldToScreenRatio = worldWidth / screenWidth
 
-  xScreenOffset = screenWidth / 8 -- this is just a test
-  yScreenOffset = screenHeight / 8
+  -- xScreenOffset = screenWidth / 8 -- this is just a test
+  -- yScreenOffset = screenHeight / 8
+  xScreenOffset = 0
+  yScreenOffset = 0
 
   borderWidth = 60
   borderHeight = 60
@@ -50,7 +52,7 @@ function love.update(dt)
   gdt = dt
   world:update(dt)
 
-  worldToScreenRatio = worldToScreenRatio + dt * 0.1 -- this is just a test get rid of this
+  -- worldToScreenRatio = worldToScreenRatio + dt * 0.1 -- this is just a test get rid of this
 
   local mousex, mousey = d.screenToWorldPoint(love.mouse.getPosition())
 
