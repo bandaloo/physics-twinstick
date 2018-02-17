@@ -18,18 +18,32 @@ local draw = {}
 --   end
 -- end
 
-function draw.worldToScreenPoint(x, y)
-  return x / worldToScreenRatio, y / worldToScreenRatio
+function draw.worldToScreenScalar(c)
+  return c / worldToScreenRatio
 end
 
-function draw.screenToWorldPoint(x, y)
-  return x * worldToScreenRatio, y * worldToScreenRatio
+function draw.worldToScreenX(x)
+  return x / worldToScreenRatio + xScreenOffset
+end
+
+function draw.worldToScreenY(y)
+  return y / worldToScreenRatio + yScreenOffset
+end
+
+function draw.worldToScreenPoint(x, y)
+  return draw.worldToScreenX(x), draw.worldToScreenY(y)
+end
+
+function draw.screenToWorldPoint(x, y) -- need to change this to include offset
+  return (x - xScreenOffset) * worldToScreenRatio, (y - yScreenOffset) * worldToScreenRatio
 end
 
 function draw.worldToScreenPoints(points)
   local screenPoints = {}
+  local offsets = {xScreenOffset, yScreenOffset}
+  local test = 0
   for i, value in ipairs(points) do
-    table.insert(screenPoints, value / worldToScreenRatio)
+    table.insert(screenPoints, value / worldToScreenRatio + offsets[(i - 1) % 2 + 1])
   end
   return screenPoints
 end
@@ -45,7 +59,7 @@ function draw.gradientLine(object, layers, center, scalar, fill)
     love.graphics.setColor(object.color[1], object.color[2], object.color[3], fill)
     if object.shape:getType() == 'circle' then
       drawFunc = love.graphics.circle
-      params = {'line', object.body:getX() / worldToScreenRatio, object.body:getY() / worldToScreenRatio, object.shape:getRadius() / worldToScreenRatio}
+      params = {'line', draw.worldToScreenX(object.body:getX()), draw.worldToScreenY(object.body:getY()), draw.worldToScreenScalar(object.shape:getRadius())}
       if fill > 0 then drawFunc('fill', params[2], params[3], params[4]) end
       --params = {'line', draw.worldToScreenPoint(object.body:getX()), draw.worldToScreenPoint(object.body:getY()), draw.worldToScreenPoint(object.shape:getRadius())}
     elseif object.shape:getType() == 'polygon' then
@@ -57,7 +71,6 @@ function draw.gradientLine(object, layers, center, scalar, fill)
       drawFunc = love.graphics.line
       params = {draw.worldToScreenPoints({object.shape:getPoints()})}
     end
-    -- if fill is given draw with fill
   else
     drawFunc = love.graphics.line
     params = draw.worldToScreenPoints(object.drawData)

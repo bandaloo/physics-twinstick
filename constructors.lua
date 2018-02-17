@@ -29,7 +29,7 @@ function constructors.newLevel()
     }
   }
   level.setObject = function(self, object)
-    if(self.relationships[object.kind] ~= nil) then
+    if self.relationships[object.kind] ~= nil then
       for key, value in pairs(self.relationships[object.kind]) do
         object[key] = value
       end
@@ -51,7 +51,7 @@ function constructors.newEnemyBasic(x, y, level)
   enemy.behaviors = {b.followf, b.reducePulse}
 
   --get the settings from the world, if there are any.
-  if(level ~= nil) then level:setObject(enemy) end
+  if level ~= nil then level:setObject(enemy) end
 
   enemy.health = 10
   enemy.body = love.physics.newBody(world, x, y, 'dynamic')
@@ -76,7 +76,7 @@ function constructors.newBullet(x, y)
   bullet.collisions = {enemy = {}}
 
   --get the settings from the world, if there are any.
-  if(level ~= nil) then level:setObject(bullet) end
+  if level ~= nil then level:setObject(bullet) end
 
   bullet.health = 1
   bullet.lifetime = 10
@@ -100,7 +100,7 @@ function constructors.newPlayer(x, y)
   player.collisions = {}
 
   --get the settings from the world, if there are any.
-  if(level ~= nil) then level:setObject(player) end
+  if level ~= nil then level:setObject(player) end
 
   player.health = 1
   player.body = love.physics.newBody(world, worldWidth / 2, worldHeight / 2, 'dynamic')
@@ -119,7 +119,7 @@ function constructors.newGround(x, y, width, height)
   ground.collisions = {}
 
   --get the settings from the world, if there are any.
-  if(level ~= nil) then level:setObject(ground) end
+  if level ~= nil then level:setObject(ground) end
 
   ground.health = 1
   ground.body = love.physics.newBody(world, x, y, 'static')
@@ -137,7 +137,7 @@ function constructors.newBorder(left, top, right, bottom)
   border.collisions = {}
 
   --get the settings from the world, if there are any.
-  if(level ~= nil) then level:setObject(border) end
+  if level ~= nil then level:setObject(border) end
 
   border.health = 1
   border.body = love.physics.newBody(world, x, y, 'static') -- change x, y
@@ -165,7 +165,7 @@ function constructors.newSpark(x, y)
   spark.kind = 'spark'
 
   --get the settings from the world, if there are any.
-  if(level ~= nil) then level:setObject(spark) end
+  if level ~= nil then level:setObject(spark) end
 
   spark.x = x
   spark.y = y
@@ -188,7 +188,7 @@ function constructors.newExplosion(x, y)
   explosion.kind = 'explosion'
 
   --get the settings from the world, if there are any.
-  if(level ~= nil) then level:setObject(explosion) end
+  if level ~= nil then level:setObject(explosion) end
 
   explosion.x = x
   explosion.y = y

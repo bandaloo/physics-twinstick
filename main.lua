@@ -16,9 +16,13 @@ function love.load(arg)
 
   worldToScreenRatio = worldWidth / screenWidth
 
+  xScreenOffset = screenWidth / 8 -- this is just a test
+  yScreenOffset = screenHeight / 8
+
   borderWidth = 60
   borderHeight = 60
 
+  -- maybe make these locals
   canShootTimerMax = 0.05
   canShootTimer = canShootTimerMax
   canShoot = true
@@ -40,12 +44,13 @@ function love.load(arg)
   objects.enemy = c.newEnemyBasic(100, 100, level)
   objects.enemy2 = c.newEnemyBasic(100, 150)
   objects.enemy3 = c.newEnemyBasic(150, 100, level)
-
 end
 
 function love.update(dt)
   gdt = dt
   world:update(dt)
+
+  worldToScreenRatio = worldToScreenRatio + dt * 0.1 -- this is just a test get rid of this
 
   local mousex, mousey = d.screenToWorldPoint(love.mouse.getPosition())
 
@@ -107,10 +112,10 @@ function love.update(dt)
   elseif love.keyboard.isDown("down", "s") then
     objects.player.body:applyForce(0, 1500)
   end
-  if love.keyboard.isDown("space") then
-    objects.player.body:setPosition(650/2, 650/2)
-    objects.player.body:setLinearVelocity(0, 0)
-  end
+  -- if love.keyboard.isDown("space") then
+  --   objects.player.body:setPosition(650/2, 650/2)
+  --   objects.player.body:setLinearVelocity(0, 0)
+  -- end
 
   if canShoot then
     local bullet = c.newBullet(bulletx, bullety)
