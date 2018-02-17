@@ -64,7 +64,7 @@ function constructors.newEnemyBasic(x, y, level)
   enemy.body:setMass(0.1)
   enemy.fuzziness = 1
   enemy.pulse = enemy.fuzziness
-  enemy.draw = function(self) d.gradientLine(self, 10, 8, self.pulse) end
+  enemy.draw = function(self) d.gradientLine(self, 10, 8, self.pulse, 50) end
   return enemy
 end
 
@@ -103,7 +103,7 @@ function constructors.newPlayer(x, y)
   if(level ~= nil) then level:setObject(player) end
 
   player.health = 1
-  player.body = love.physics.newBody(world, screenWidth / 2, screenHeight / 2, 'dynamic')
+  player.body = love.physics.newBody(world, worldWidth / 2, worldHeight / 2, 'dynamic')
   player.shape = love.physics.newCircleShape(25)
   player.fixture = love.physics.newFixture(player.body, player.shape, 1)
   player.fixture:setRestitution(0.1)
@@ -122,7 +122,7 @@ function constructors.newGround(x, y, width, height)
   if(level ~= nil) then level:setObject(ground) end
 
   ground.health = 1
-  ground.body = love.physics.newBody(world, x, y)
+  ground.body = love.physics.newBody(world, x, y, 'static')
   ground.shape = love.physics.newRectangleShape(width, height)
   ground.fixture = love.physics.newFixture(ground.body, ground.shape)
   ground.fixture:setUserData(ground)
@@ -141,8 +141,7 @@ function constructors.newBorder(left, top, right, bottom)
 
   border.health = 1
   border.body = love.physics.newBody(world, x, y, 'static') -- change x, y
-  -- can change points with function for rounded edges
-  -- local points = {left, top, left + right, top, left + right, bottom, left, bottom}
+  -- maybe make this in a loop, but it might not make the code much cleaner
   local points1 = h.circleSectionPoints(right, bottom, 20, 30, 0, math.pi * 1/2)
   local points2 = h.circleSectionPoints(left, bottom, 20, 30,  math.pi * 1/2, math.pi)
   local points3 = h.circleSectionPoints(left, top, 20, 30, math.pi, math.pi * 3/2)
@@ -170,13 +169,17 @@ function constructors.newSpark(x, y)
 
   spark.x = x
   spark.y = y
-  spark.xvel = math.random(-200, 200)
-  spark.yvel = math.random(-200, 200)
-  spark.damping = 0.1
-  spark.lifetime = 1
-  spark.color = {50, 200, 40}
+  spark.xvel = math.random(-800, 800)
+  spark.yvel = math.random(-800, 800)
+  spark.damping = 0.01
+  spark.lifetime = 0.2
+  spark.color = {math.random(255), math.random(255), math.random(255)}
   spark.size = 5
   spark.schange = -3
+  spark.draw = function(self)
+    self.drawData = {self.x, self.y, self.x + spark.xvel / 40, self.y + spark.yvel / 40}
+    d.gradientLine(self, self.size, 5, 1, 20, false)
+  end
   return spark
 end
 
@@ -196,6 +199,10 @@ function constructors.newExplosion(x, y)
   explosion.color = {200, 200, 0}
   explosion.size = 75
   explosion.schange = -100
+  explosion.draw = function(self)
+    self.drawData = {x, y, x + 10, y + 10}
+    d.gradientLine(self, 5, 2, 1, false)
+  end
   return explosion
 end
 

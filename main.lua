@@ -5,10 +5,16 @@ local d = require "draw"
 debug = true
 
 function love.load(arg)
+  love.window.setFullscreen(true)
   love.graphics.setBackgroundColor(255, 255, 255)
 
   screenWidth = love.graphics.getWidth()
   screenHeight = love.graphics.getHeight()
+
+  worldWidth = 1280
+  worldHeight = 720
+
+  worldToScreenRatio = worldWidth / screenWidth
 
   borderWidth = 60
   borderHeight = 60
@@ -17,16 +23,17 @@ function love.load(arg)
   canShootTimer = canShootTimerMax
   canShoot = true
 
-  love.physics.setMeter(64)
-  world = love.physics.newWorld(0, 9.81*64*0, true)
+  gameMeter = 64
+  love.physics.setMeter(gameMeter)
+  world = love.physics.newWorld(0, 9.81*gameMeter*0, true)
   world:setCallbacks(beginContact)
   objects = {}
   particles = {}
 
-  -- objects.ground = c.newGround(screenWidth / 2, screenHeight - 20, screenWidth, 20)
+  objects.ground = c.newGround(screenWidth / 2, screenHeight - 20, screenWidth, 20)
   level = c.newLevel()
-  objects.border = c.newBorder(borderWidth, borderHeight, screenWidth - borderWidth, screenHeight - borderHeight)
-  objects.player = c.newPlayer(screenWidth / 2, screenHeight / 2)
+  objects.border = c.newBorder(borderWidth, borderHeight, worldWidth - borderWidth, worldHeight - borderHeight)
+  objects.player = c.newPlayer(worldWidth / 2, worldHeight / 2)
   for i = 0, 10 do
     table.insert(objects, c.newEnemyBasic(80 + i * 60, 300))
   end
@@ -40,13 +47,16 @@ function love.update(dt)
   gdt = dt
   world:update(dt)
 
-  local mousex, mousey = love.mouse.getPosition()
+  local mousex, mousey = d.screenToWorldPoint(love.mouse.getPosition())
 
   for key, particle in pairs(particles) do
     particle.x = particle.x + particle.xvel * dt
     particle.y = particle.y + particle.yvel * dt
     -- do damping
     particle.lifetime = particle.lifetime - dt
+    local speed = h.distance(0, 0, particle.xvel, particle.yvel)
+    speed = speed - particle.damping * speed * dt
+    particle.xvel, particle.yvel = h.normalizeThenScale(particle.xvel, particle.yvel, speed)
     particle.size = particle.size + particle.schange * dt
     if particle.lifetime <= 0 then
       particles[key] = nil
@@ -78,11 +88,13 @@ function love.update(dt)
 
   -- TODO use the helper functions to clean this up
   local playerx, playery = objects.player.body:getPosition()
-  local distance = math.sqrt((mousex - playerx) ^ 2 + (mousey - playery) ^ 2)
-  local shotx = (mousex - playerx) / distance
-  local shoty = (mousey - playery) / distance
-  local bulletx = playerx + shotx * 40
-  local bullety = playery + shoty * 40
+  -- local distance = math.sqrt((mousex - playerx) ^ 2 + (mousey - playery) ^ 2)
+  -- local shotx = (mousex - playerx) / distance
+  -- local shoty = (mousey - playery) / distance
+  -- local bulletx = playerx + shotx * 40
+  -- local bullety = playery + shoty * 40
+  local shotx, shoty = h.normalToPoint(playerx, playery, mousex, mousey)
+  local bulletx, bullety = h.scaledNormalToPointPos(playerx, playery, mousex, mousey, 40)
 
   -- TODO make this directional
   if love.keyboard.isDown("right", "d") then
@@ -114,7 +126,7 @@ function love.draw(dt)
   -- love.graphics.setShader(myShader)
   -- testtable = {3, 2}
   -- test1, test2 = unpack(testtable)
-  -- love.graphics.printf(test1, 0, 0, 100, 'left')
+  love.graphics.printf(objects.player.body:getX(), 0, 0, 100, 'left')
   love.graphics.setColor(72, 160, 14)
   -- love.graphics.setLineStyle('rough')
   -- love.graphics.setLineWidth(5)
@@ -125,17 +137,19 @@ function love.draw(dt)
   end
 
   for key, particle in pairs(particles) do
-    love.graphics.setColor(particle.color[1], particle.color[2], particle.color[3])
-    if particle.kind == 'spark' then
-      love.graphics.circle('fill', particle.x, particle.y, particle.size)
-    end
-    if particle.kind == 'explosion' then
-      love.graphics.circle('fill', particle.x, particle.y, particle.size)
-    end
+    particle:draw()
+    -- love.graphics.setColor(particle.color[1], particle.color[2], particle.color[3])
+    -- if particle.kind == 'spark' then
+    --   love.graphics.circle('fill', particle.x, particle.y, particle.size)
+    -- end
+    -- if particle.kind == 'explosion' then
+    --   love.graphics.circle('fill', particle.x, particle.y, particle.size)
+    -- end
   end
 end
 
 function beginContact(fixture1, fixture2, coll)
+  -- this is a flip flop so figure out a better way to do this
   object1 = fixture1:getUserData()
   object2 = fixture2:getUserData()
   if object1.collisions[object2.kind] ~= nil then

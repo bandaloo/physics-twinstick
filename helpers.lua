@@ -5,13 +5,23 @@ function helpers.distance(x1, y1, x2, y2)
 end
 
 function helpers.normalize(x, y)
-  local magnitude = distance(0, 0, x, y);
+  local magnitude = helpers.distance(0, 0, x, y);
   return x / magnitude, y / magnitude
+end
+
+function helpers.normalizeThenScale(x, y, scalar)
+  local xs, ys = helpers.normalize(x, y)
+  return xs * scalar, ys * scalar
 end
 
 function helpers.normalToPoint(x1, y1, x2, y2)
   local magnitude = helpers.distance(x1, y1, x2, y2)
   return (x2 - x1) / magnitude, (y2 - y1) / magnitude
+end
+
+function helpers.scaledNormalToPointPos(x1, y1, x2, y2, scalar)
+  local x, y = helpers.normalToPoint(x1, y1, x2, y2)
+  return x1 + x * scalar, y1 + y * scalar
 end
 
 function helpers.circleSectionPoints(x, y, radius, sections, angleStart, angleEnd)
