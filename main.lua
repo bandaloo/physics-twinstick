@@ -2,6 +2,7 @@ local c = require "constructors"
 local h = require "helpers"
 local d = require "draw"
 local v = require "view"
+local t = require "transformations"
 
 debug = true
 
@@ -18,7 +19,9 @@ function love.load(arg)
   cameraX = worldWidth / 2
   cameraY = worldHeight / 2
 
+  currentDepth = 5
   zoomAmount = 1
+  totalZoomAmount = 1
 
   worldToScreenRatio = worldWidth / screenWidth
 
@@ -29,141 +32,168 @@ function love.load(arg)
   xScreenOffset = 0
   yScreenOffset = 0
 
-  v.setOffsets()
+  totalX = 0
+  totalY = 0
+  worldSize = 1
+
+  --v.setOffsets()
 
   borderWidth = 60
   borderHeight = 60
 
-  -- maybe make these locals
-  canShootTimerMax = 0.05
-  canShootTimer = canShootTimerMax
-  canShoot = true
 
   gameMeter = 64
   love.physics.setMeter(gameMeter)
-  world = love.physics.newWorld(0, 9.81*gameMeter*0, true)
-  world:setCallbacks(beginContact)
-  objects = {}
-  particles = {}
+
+  world1 = love.physics.newWorld(0, 0, true)
+  world1:setCallbacks(beginContact)
+
+  frames = {}
+
+  frame1 = {}
+  frame1.objects = {}
+  frame1.particles = {}
+  frame1.world = world1
+  frame1.totalX = 0
+  frame1.totalY = 0
+  frame1.size = 1
+  frame1.depth = 1
+
+  objects = frame1.objects
+  particles = frame1.particles
+  world = frame1.world
+
+  table.insert(frames, frame1)
 
   -- objects.ground = c.newGround(screenWidth / 2, screenHeight - 20, screenWidth, 20)
   level = c.newLevel()
   objects.border = c.newBorder(borderWidth, borderHeight, worldWidth - borderWidth, worldHeight - borderHeight)
   objects.player = c.newPlayer(worldWidth / 2, worldHeight / 2)
-  for i = 0, 10 do
-    table.insert(objects, c.newEnemyBasic(80 + i * 60, 300))
-  end
-  objects.enemy = c.newEnemyBasic(100, 100, level)
-  objects.enemy2 = c.newEnemyBasic(100, 150)
-  objects.enemy3 = c.newEnemyBasic(150, 100, level)
+  -- for i = 0, 10 do
+  --   table.insert(objects, c.newEnemyBasic(80 + i * 60, 300))
+  -- end
+  -- objects.enemy = c.newEnemyBasic(100, 100, level)
+  -- objects.enemy2 = c.newEnemyBasic(100, 150)
+  -- objects.enemy3 = c.newEnemyBasic(150, 100, level)
+  objects.enemyScared = c.newEnemyBasic(200, 200)
+
+  world2 = love.physics.newWorld(0, 0, true)
+  world2:setCallbacks(beginContact)
+
+  frame2 = {}
+  frame2.objects = {}
+  frame2.particles = {}
+  frame2.world = world2
+  frame2.totalX = 0
+  frame2.totalY = 0
+  frame2.size = 1
+  frame2.depth = 2
+
+  objects = frame2.objects
+  particles = frame2.particles
+  world = frame2.world
+
+  table.insert(frames, frame2)
+
+  objects.border = c.newBorder(borderWidth, borderHeight, worldWidth - borderWidth, worldHeight - borderHeight)
+
+  objects.player = c.newPlayer(200, 200)
+  objects.enemy = c.newEnemyBasic(100, 100)
+
+  world3 = love.physics.newWorld(0, 0, true)
+  world3:setCallbacks(beginContact)
+
+  frame3 = {}
+  frame3.objects = {}
+  frame3.particles = {}
+  frame3.world = world3
+  frame3.totalX = 300
+  frame3.totalY = 1000
+  frame3.size = 1
+  frame3.depth = 2
+
+  objects = frame3.objects
+  particles = frame3.particles
+  world = frame3.world
+
+  table.insert(frames, frame3)
+
+  objects.border = c.newBorder(borderWidth, borderHeight, worldWidth - borderWidth, worldHeight - borderHeight)
+  objects.border.color = {20, 100, 30}
+
+  objects.player = c.newPlayer(200, 200)
+  objects.enemy = c.newEnemyBasic(100, 100)
 end
 
 function love.update(dt)
   gdt = dt
-  world:update(dt)
 
-  v.positionCamera(objects.player.body:getX(), objects.player.body:getY())
-  v.zoomCamera(0.1)
+  -- v.positionCamera(objects.player.body:getX(), objects.player.body:getY())
+  -- v.zoomCamera(0.1)
   -- worldToScreenRatio = worldToScreenRatio + dt * 0.1 -- this is just a test get rid of this
-
-  local mousex, mousey = d.screenToWorldPoint(love.mouse.getPosition())
-
-  for key, particle in pairs(particles) do
-    particle.x = particle.x + particle.xvel * dt
-    particle.y = particle.y + particle.yvel * dt
-    -- do damping
-    particle.lifetime = particle.lifetime - dt
-    local speed = h.distance(0, 0, particle.xvel, particle.yvel)
-    speed = speed - particle.damping * speed * dt
-    particle.xvel, particle.yvel = h.normalizeThenScale(particle.xvel, particle.yvel, speed)
-    particle.size = particle.size + particle.schange * dt
-    if particle.lifetime <= 0 then
-      particles[key] = nil
-    end
-  end
-
-  if canShootTimer > 0 then
-    canShootTimer = canShootTimer - dt
-  else
-    canShoot = true
-  end
-  for key, object in pairs(objects) do
-    currentKey = key
-    if object.behaviors ~= nil then
-      -- maybe switch these so a destroyed object won't do a thing for the frame after it's destroyed
-      for i, func in ipairs(object.behaviors) do
-        func(object)
+  for i, frame in ipairs(frames) do
+    world = frame.world
+    world:update(dt)
+    setFrameInfo(frame)
+    for key, particle in pairs(particles) do
+      particle.x = particle.x + particle.xvel * dt
+      particle.y = particle.y + particle.yvel * dt
+      particle.lifetime = particle.lifetime - dt
+      local speed = h.distance(0, 0, particle.xvel, particle.yvel)
+      if speed ~= 0 then
+        speed = speed - particle.damping * speed * dt
+        particle.xvel, particle.yvel = h.normalizeThenScale(particle.xvel, particle.yvel, speed)
+      end
+      particle.size = particle.size + particle.schange * dt
+      if particle.lifetime <= 0 then
+        particles[key] = nil
       end
     end
-    if object.health <= 0 or (object.lifetime ~= nil and object.lifetime < 0) then
-      object.destroy(object)
-      object.body:destroy()
-      objects[currentKey] = nil
+
+    for key, object in pairs(objects) do
+      currentKey = key
+      if object.behaviors ~= nil then
+        -- maybe switch these so a destroyed object won't do a thing for the frame after it's destroyed
+        for i, func in ipairs(object.behaviors) do
+          func(object)
+        end
+      end
+      if object.health <= 0 or (object.lifetime ~= nil and object.lifetime < 0) then
+        object.destroy(object)
+        object.body:destroy()
+        objects[currentKey] = nil
+      end
+      if object.lifetime ~= nil then
+        object.lifetime = object.lifetime - dt
+      end
     end
-    if object.lifetime ~= nil then
-      object.lifetime = object.lifetime - dt
-    end
-  end
-
-  -- TODO use the helper functions to clean this up
-  local playerx, playery = objects.player.body:getPosition()
-  -- local distance = math.sqrt((mousex - playerx) ^ 2 + (mousey - playery) ^ 2)
-  -- local shotx = (mousex - playerx) / distance
-  -- local shoty = (mousey - playery) / distance
-  -- local bulletx = playerx + shotx * 40
-  -- local bullety = playery + shoty * 40
-  local shotx, shoty = h.normalToPoint(playerx, playery, mousex, mousey)
-  local bulletx, bullety = h.scaledNormalToPointPos(playerx, playery, mousex, mousey, 40)
-
-  -- TODO make this directional
-  if love.keyboard.isDown("right", "d") then
-    objects.player.body:applyForce(1500, 0)
-  elseif love.keyboard.isDown("left", "a") then
-    objects.player.body:applyForce(-1500, 0)
-  end
-  if love.keyboard.isDown("up", "w") then
-    objects.player.body:applyForce(0, -1500)
-  elseif love.keyboard.isDown("down", "s") then
-    objects.player.body:applyForce(0, 1500)
-  end
-  -- if love.keyboard.isDown("space") then
-  --   objects.player.body:setPosition(650/2, 650/2)
-  --   objects.player.body:setLinearVelocity(0, 0)
-  -- end
-
-  if canShoot then
-    local bullet = c.newBullet(bulletx, bullety)
-    bullet.body:setLinearVelocity(shotx * 400, shoty * 400)
-    table.insert(objects, bullet)
-    canShootTimer = canShootTimerMax
-    canShoot = false
   end
 end
 
 
 function love.draw(dt)
-  -- love.graphics.setShader(myShader)
-  -- testtable = {3, 2}
-  -- test1, test2 = unpack(testtable)
-  love.graphics.printf(zoomAmount, 0, 0, 200, 'left')
-  love.graphics.setColor(72, 160, 14)
-  -- love.graphics.setLineStyle('rough')
-  -- love.graphics.setLineWidth(5)
-  -- love.graphics.line(100, 200, 300, 400)
-  -- if hit then love.graphics.printf('hit', 0, 100, 100, 'left') end
-  for key, object in pairs(objects) do
-    object:draw()
-  end
+  -- love.graphics.printf(objects.player.aim, 0, 0, 200, 'left')
+  --v.panCamera(100, 100)
+  -- totalZoomAmount = totalZoomAmount + 0.01
+  for i, frame in ipairs(frames) do
+    --world = frame.world
+    setFrameInfo(frame)
+    if i == 3 then
+      local camx, camy = frames[3].objects.player.body:getPosition() -- this is a test get rid of this later
+      v.positionCamera(totalX + camx, totalY + camy)
+    end
+    -- frame.cameraX = cameraX
+    -- frame.cameraY = cameraY
+    -- frame.zoomAmount = zoomAmount
 
-  for key, particle in pairs(particles) do
-    particle:draw()
-    -- love.graphics.setColor(particle.color[1], particle.color[2], particle.color[3])
-    -- if particle.kind == 'spark' then
-    --   love.graphics.circle('fill', particle.x, particle.y, particle.size)
-    -- end
-    -- if particle.kind == 'explosion' then
-    --   love.graphics.circle('fill', particle.x, particle.y, particle.size)
-    -- end
+    love.graphics.setColor(72, 160, 14) -- do we need this?
+    for key, object in pairs(objects) do
+      object:draw()
+    end
+
+    for key, particle in pairs(particles) do
+      particle:draw()
+    end
   end
 end
 
@@ -183,4 +213,14 @@ function beginContact(fixture1, fixture2, coll)
       func(object2, object1)
     end
   end
+end
+
+function setFrameInfo(frame)
+  objects = frame.objects
+  particles = frame.particles
+  totalX = frame.totalX
+  totalY = frame.totalY
+  worldSize = frame.size
+  zoomAmount = frame.depth + currentDepth
+  v.setOffsets()
 end

@@ -44,4 +44,8 @@ function helpers.combine(...)
   return combined
 end
 
+function helpers.normalToObject(self, object)
+  return helpers.normalToPoint(self.body:getX(), self.body:getY(), object.body:getX(), object.body:getY())
+end
+
 return helpers

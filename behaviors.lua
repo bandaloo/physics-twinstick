@@ -8,13 +8,37 @@ function behaviors.link(module)
 end
 
 function behaviors.followv(self)
-  local x, y = h.normalToPoint(self.body:getX(), self.body:getY(), objects.player.body:getX(), objects.player.body:getY())
-  self.body:setLinearVelocity(x * 30, y * 30)
+  if object.player ~= nil then
+    local x, y = h.normalToObject(self, object.player)
+    self.body:setLinearVelocity(x * 30, y * 30)
+  end
 end
 
 function behaviors.followf(self)
-  local x, y = h.normalToPoint(self.body:getX(), self.body:getY(), objects.player.body:getX(), objects.player.body:getY())
-  self.body:applyForce(x * 30, y * 30)
+  if objects.player ~= nil then
+    local x, y = h.normalToObject(self, objects.player)
+    self.body:applyForce(x * 30, y * 30)
+  end
+end
+
+function behaviors.encircle(self)
+  if objects.player ~= nil then
+    local x, y = self.body:getPosition()
+    local px, py = objects.player.body:getPosition()
+
+    local fx, fy = h.normalToPoint(x, y, px, py)
+
+    -- local angleToPlayer = math.atan2(fy, fx)
+    -- local scramAngle = angleToPlayer + math.pi / 2
+    -- local rx, ry = 10 * math.cos(scramAngle ), 10 * math.sin(scramAngle)
+    local rx, ry = -fy, fx -- maybe put this in helpers
+
+
+    -- local magnitude = h.distance(x, y, px, py)
+    -- local scalar = magnitude - 400
+    scalar = 50
+    self.body:applyForce(fx * scalar + rx * 10, fy * scalar + ry * 10)
+  end
 end
 
 function behaviors.reducePulse(self)

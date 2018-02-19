@@ -1,14 +1,13 @@
-local d = require "draw"
+--local d = require "draw"
+local t = require "transformations"
 
 local view = {}
 
 function view.setOffsets()
-  -- xWorldOffset = -(cameraX - (worldWidth * zoomAmount / 2))
-  -- yWorldOffset = -(cameraY - (worldHeight * zoomAmount / 2))
-  xWorldOffset = ((worldWidth * zoomAmount / 2) - cameraX)
-  yWorldOffset = ((worldHeight * zoomAmount / 2) - cameraY)
-  xScreenOffset = d.worldToScreenScalar(xWorldOffset)
-  yScreenOffset = d.worldToScreenScalar(yWorldOffset)
+  xWorldOffset = ((worldWidth * zoomAmount / 2) - cameraX) * (1 / worldSize) + totalX
+  yWorldOffset = ((worldHeight * zoomAmount / 2) - cameraY) * (1 / worldSize) + totalY
+  xScreenOffset = t.worldToScreenScalar(xWorldOffset) * (1 / worldSize)
+  yScreenOffset = t.worldToScreenScalar(yWorldOffset) * (1 / worldSize)
 end
 
 function view.panCamera(dx, dy)
@@ -24,18 +23,13 @@ function view.positionCamera(x, y)
 end
 
 function view.zoomCamera(dz)
-  -- worldWidth = worldWidth - worldWidth * dz * gdt
-  -- worldHeight = worldHeight - worldHeight * dz * gdt
-  -- worldToScreenRatio = worldToScreenRatio - worldToScreenRatio * dz * gdt
-  -- cameraX = worldWidth / 2
-  -- cameraY = worldHeight / 2
-  -- view.setOffsets()
   zoomAmount = zoomAmount + dz * gdt
   view.setOffsets()
 end
 
--- function view.scaleCamera(scale)
---   worldToScreenRatio = zoom
--- end
+function view.scaleCamera(z)
+  zoomAmount = z
+  view.setOffsets()
+end
 
 return view

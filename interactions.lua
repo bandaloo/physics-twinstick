@@ -7,7 +7,7 @@ function interactions.link(module)
 end
 
 function interactions.reduceHealth(self, other)
-  table.insert(particles, c.newSpark(self.body:getX(), self.body:getY()))
+  --table.insert(particles, c.newSpark(self.body:getX(), self.body:getY()))
   self.health = self.health - 1
 end
 

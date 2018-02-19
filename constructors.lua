@@ -3,6 +3,7 @@ local i = require "interactions"
 local b = require "behaviors"
 local d = require "draw"
 local h = require "helpers"
+local t = require "transformations"
 
 local constructors = {}
 
@@ -16,7 +17,7 @@ function constructors.newLevel()
   level.relationships = {
     enemy = {
       destroy = b.enemyDestroy,
-      collisions = {bullet = {i.reduceHealth,  i.setPulse, i.eliminateOthers}},
+      collisions = {bullet = {i.reduceHealth,  i.setPulse, i.eliminateOther}},
       behaviors = {b.followf, b.reducePulse},
     },
     bullet = {
@@ -64,7 +65,14 @@ function constructors.newEnemyBasic(x, y, level)
   enemy.body:setMass(0.1)
   enemy.fuzziness = 1
   enemy.pulse = enemy.fuzziness
-  enemy.draw = function(self) d.gradientLine(self, 10, 8, self.pulse, 50) end
+  enemy.draw = function(self) d.gradientLine(d.objectData(self), 10, 8, self.pulse, 50) end
+  return enemy
+end
+
+function constructors.newEnemyEncircler(x, y, level)
+  local enemy = constructors.newEnemyBasic(x, y, level)
+  enemy.color = {200, 0, 200}
+  enemy.behaviors = {b.encircle, b.reducePulse}
   return enemy
 end
 
@@ -89,7 +97,7 @@ function constructors.newBullet(x, y)
   bullet.fixture:setUserData(bullet)
   bullet.fixture:setCategory(2)
   bullet.fixture:setMask(2)
-  bullet.draw = function(self) d.gradientLine(self, 5, 3, 0.5) end
+  bullet.draw = function(self) d.gradientLine(d.objectData(self), 5, 3, 0.5) end
   return bullet
 end
 
@@ -99,17 +107,59 @@ function constructors.newPlayer(x, y)
   player.color = {255, 0, 0}
   player.collisions = {}
 
+  player.canShoot = true
+  player.canShootTimerMax = 0.05
+  player.canShootTimer = player.canShootTimerMax
+
   --get the settings from the world, if there are any.
   if level ~= nil then level:setObject(player) end
 
   player.health = 1
-  player.body = love.physics.newBody(world, worldWidth / 2, worldHeight / 2, 'dynamic')
+  -- player.aim = 0
+  player.body = love.physics.newBody(world, x, y, 'dynamic')
   player.shape = love.physics.newCircleShape(25)
+  player.behaviors = {
+    function(self)
+      -- TODO make this directional
+      if love.keyboard.isDown("right", "d") then
+        self.body:applyForce(1500, 0)
+      elseif love.keyboard.isDown("left", "a") then
+        self.body:applyForce(-1500, 0)
+      end
+      if love.keyboard.isDown("up", "w") then
+        self.body:applyForce(0, -1500)
+      elseif love.keyboard.isDown("down", "s") then
+        self.body:applyForce(0, 1500)
+      end
+    end,
+    function(self)
+      local mousex, mousey = t.screenToWorldPoint(love.mouse.getPosition())
+      -- TODO make all variable names camel case
+      local playerx, playery = self.body:getPosition()
+      local shotx, shoty = h.normalToPoint(playerx, playery, mousex, mousey)
+      -- objects.player.aim = math.atan2(shoty, shotx)
+      local bulletx, bullety = h.scaledNormalToPointPos(playerx, playery, mousex, mousey, 40)
+
+      if self.canShootTimer > 0 then
+        self.canShootTimer = self.canShootTimer - gdt
+      else
+        self.canShoot = true
+      end
+
+      if self.canShoot then
+        local bullet = constructors.newBullet(bulletx, bullety)
+        bullet.body:setLinearVelocity(shotx * 400, shoty * 400)
+        table.insert(objects, bullet)
+        self.canShootTimer = self.canShootTimerMax
+        self.canShoot = false
+      end
+    end
+  }
   player.fixture = love.physics.newFixture(player.body, player.shape, 1)
   player.fixture:setRestitution(0.1)
   player.body:setLinearDamping(10)
   player.fixture:setUserData(player)
-  player.draw = function(self) d.gradientLine(self, 9, 7, 1) end
+  player.draw = function(self) d.gradientLine(d.objectData(self), 9, 7, 1) end
   return player
 end
 
@@ -127,7 +177,7 @@ function constructors.newGround(x, y, width, height)
   ground.fixture = love.physics.newFixture(ground.body, ground.shape)
   ground.fixture:setUserData(ground)
   ground.color = {72, 160, 14}
-  ground.draw = function(self) d.gradientLine(self, 9, 7, 1) end
+  ground.draw = function(self) d.gradientLine(d.objectData(self), 9, 7, 1) end
   return ground
 end
 
@@ -154,7 +204,7 @@ function constructors.newBorder(left, top, right, bottom)
   border.fixture = love.physics.newFixture(border.body, border.shape)
   border.fixture:setUserData(border)
   border.color = {110, 94, 255}
-  border.draw = function(self) d.gradientLine(self, 12, 10, 1) end
+  border.draw = function(self) d.gradientLine(d.objectData(self), 12, 10, 1) end
   return border
 end
 
@@ -177,8 +227,12 @@ function constructors.newSpark(x, y)
   spark.size = 5
   spark.schange = -3
   spark.draw = function(self)
-    self.drawData = {self.x, self.y, self.x + spark.xvel / 40, self.y + spark.yvel / 40}
-    d.gradientLine(self, self.size, 5, 1, 20, false)
+    local data = {
+      type = 'chain',
+      points = {self.x, self.y, self.x + spark.xvel / 40, self.y + spark.yvel / 40},
+      color = spark.color
+    }
+    d.gradientLine(data, self.size, 5, 1, 20)
   end
   return spark
 end
@@ -196,12 +250,18 @@ function constructors.newExplosion(x, y)
   explosion.yvel = 0
   explosion.damping = 0
   explosion.lifetime = 0.5
-  explosion.color = {200, 200, 0}
+  explosion.color = {math.random(255), math.random(255), math.random(255)}
   explosion.size = 75
   explosion.schange = -100
   explosion.draw = function(self)
-    self.drawData = {x, y, x + 10, y + 10}
-    d.gradientLine(self, 5, 2, 1, false)
+    local data = {
+      type = 'circle',
+      x = self.x,
+      y = self.y,
+      radius = self.size,
+      color = explosion.color
+    }
+    d.gradientLine(data, 5, 2, 1, 200)
   end
   return explosion
 end
