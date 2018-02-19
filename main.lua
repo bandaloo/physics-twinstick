@@ -19,7 +19,7 @@ function love.load(arg)
   cameraX = worldWidth / 2
   cameraY = worldHeight / 2
 
-  currentDepth = 5
+  currentDepth = 0
   zoomAmount = 1
   totalZoomAmount = 1
 
@@ -69,12 +69,12 @@ function love.load(arg)
   level = c.newLevel()
   objects.border = c.newBorder(borderWidth, borderHeight, worldWidth - borderWidth, worldHeight - borderHeight)
   objects.player = c.newPlayer(worldWidth / 2, worldHeight / 2)
-  -- for i = 0, 10 do
-  --   table.insert(objects, c.newEnemyBasic(80 + i * 60, 300))
-  -- end
-  -- objects.enemy = c.newEnemyBasic(100, 100, level)
-  -- objects.enemy2 = c.newEnemyBasic(100, 150)
-  -- objects.enemy3 = c.newEnemyBasic(150, 100, level)
+  for i = 0, 10 do
+    table.insert(objects, c.newEnemyBasic(80 + i * 60, 300))
+  end
+  objects.enemy = c.newEnemyBasic(100, 100, level)
+  objects.enemy2 = c.newEnemyBasic(100, 150)
+  objects.enemy3 = c.newEnemyBasic(150, 100, level)
   objects.enemyScared = c.newEnemyBasic(200, 200)
 
   world2 = love.physics.newWorld(0, 0, true)
@@ -107,10 +107,10 @@ function love.load(arg)
   frame3.objects = {}
   frame3.particles = {}
   frame3.world = world3
-  frame3.totalX = 300
-  frame3.totalY = 1000
+  frame3.totalX = 0
+  frame3.totalY = 0
   frame3.size = 1
-  frame3.depth = 2
+  frame3.depth = 1.5
 
   objects = frame3.objects
   particles = frame3.particles
@@ -123,6 +123,8 @@ function love.load(arg)
 
   objects.player = c.newPlayer(200, 200)
   objects.enemy = c.newEnemyBasic(100, 100)
+
+  table.sort(frames, function(f1, f2) return f1.depth > f2.depth end)
 end
 
 function love.update(dt)
@@ -133,7 +135,7 @@ function love.update(dt)
   -- worldToScreenRatio = worldToScreenRatio + dt * 0.1 -- this is just a test get rid of this
   for i, frame in ipairs(frames) do
     world = frame.world
-    world:update(dt)
+    world:update(dt) -- maybe update world after this stuff has been done
     setFrameInfo(frame)
     for key, particle in pairs(particles) do
       particle.x = particle.x + particle.xvel * dt
@@ -178,7 +180,7 @@ function love.draw(dt)
   for i, frame in ipairs(frames) do
     --world = frame.world
     setFrameInfo(frame)
-    if i == 3 then
+    if i == 1 then
       local camx, camy = frames[3].objects.player.body:getPosition() -- this is a test get rid of this later
       v.positionCamera(totalX + camx, totalY + camy)
     end
@@ -199,7 +201,7 @@ end
 
 function beginContact(fixture1, fixture2, coll)
   -- this is a flip flop so figure out a better way to do this
-  object1 = fixture1:getUserData()
+  object1 = fixture1:getUserData() -- make this compatible with sensors
   object2 = fixture2:getUserData()
   if object1.collisions[object2.kind] ~= nil then
     for i, func in ipairs(object1.collisions[object2.kind]) do

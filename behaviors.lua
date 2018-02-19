@@ -50,13 +50,6 @@ function behaviors.reducePulse(self)
   end
 end
 
--- function probably not needed anymore
--- function behaviors.checkIfDead(self)
---   if self.health <= 0 then
---     self.destroy(self)
---   end
--- end
-
 function behaviors.enemyDestroy(self)
   for i = 1, 16 do
     table.insert(particles, c.newSpark(self.body:getX(), self.body:getY()))
