@@ -22,15 +22,15 @@ local draw = {}
 
 -- all these transformations should be in a different module; i was being lazy
 -- function draw.worldToScreenScalar(c)
---   return c / (worldToScreenRatio * zoomAmount)
+--   return c / (worldToScreenRatio * depthScalar)
 -- end
 --
 -- function draw.worldToScreenX(x)
---   return x / (worldToScreenRatio * zoomAmount) + xScreenOffset
+--   return x / (worldToScreenRatio * depthScalar) + xScreenOffset
 -- end
 --
 -- function draw.worldToScreenY(y)
---   return y / (worldToScreenRatio * zoomAmount) + yScreenOffset
+--   return y / (worldToScreenRatio * depthScalar) + yScreenOffset
 -- end
 --
 -- function draw.worldToScreenPoint(x, y)
@@ -38,7 +38,7 @@ local draw = {}
 -- end
 --
 -- function draw.screenToWorldPoint(x, y)
---   return (x - xScreenOffset) * worldToScreenRatio * zoomAmount, (y - yScreenOffset) * worldToScreenRatio * zoomAmount
+--   return (x - xScreenOffset) * worldToScreenRatio * depthScalar, (y - yScreenOffset) * worldToScreenRatio * depthScalar
 -- end
 
 -- function draw.worldToScreenPoints(points)
@@ -46,7 +46,7 @@ local draw = {}
 --   local offsets = {xScreenOffset, yScreenOffset}
 --   local test = 0
 --   for i, value in ipairs(points) do
---     table.insert(screenPoints, value / (worldToScreenRatio * zoomAmount) + offsets[(i - 1) % 2 + 1])
+--     table.insert(screenPoints, value / (worldToScreenRatio * depthScalar) + offsets[(i - 1) % 2 + 1])
 --   end
 --   return screenPoints
 -- end
@@ -80,7 +80,7 @@ local draw = {}
 --   end
 --   love.graphics.setColor(object.color[1], object.color[2], object.color[3], alpha)
 --   for i = 0, center do
---     love.graphics.setLineWidth(scalar * (layers - i) / (worldToScreenRatio * zoomAmount))
+--     love.graphics.setLineWidth(scalar * (layers - i) / (worldToScreenRatio * depthScalar))
 --     if i == center then
 --       love.graphics.setColor(object.color[1], object.color[2], object.color[3], 255)
 --     end
@@ -126,7 +126,7 @@ function draw.gradientLine(data, layers, center, scalar, fill)
   end
   love.graphics.setColor(data.color[1], data.color[2], data.color[3], alpha)
   for i = 0, center do
-    love.graphics.setLineWidth(scalar * (layers - i) / (worldToScreenRatio * zoomAmount * (1 / worldSize)))
+    love.graphics.setLineWidth(scalar * (layers - i) / (worldToScreenRatio * depthScalar * (1 / frameSize)))
     if i == center then
       love.graphics.setColor(data.color[1], data.color[2], data.color[3], 255)
     end

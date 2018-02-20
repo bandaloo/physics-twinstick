@@ -1,3 +1,5 @@
+local f = require "framer"
+
 local c
 
 local interactions = {}
@@ -7,7 +9,11 @@ function interactions.link(module)
 end
 
 function interactions.reduceHealth(self, other)
-  --table.insert(particles, c.newSpark(self.body:getX(), self.body:getY()))
+  table.insert(particles, c.newSpark(self.body:getX(), self.body:getY()))
+  local x, y = self.body:getX(), self.body:getY()
+  table.insert(self.frame.creates, function() return c.newEnemyBullet(x, y) end)
+  --table.insert(particles, c.newExplosion(self.body:getX(), self.body:getY()))
+  --table.insert(objects, c.newEnemyBasic(self.body:getX(), self.body:getY()))
   self.health = self.health - 1
 end
 

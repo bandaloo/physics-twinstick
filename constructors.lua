@@ -1,4 +1,4 @@
---local b = require "behaviors"
+frame = currentFrame--local b = require "behaviors"
 local i = require "interactions"
 local b = require "behaviors"
 local d = require "draw"
@@ -60,6 +60,8 @@ function constructors.newEnemyBasic(x, y, level)
   enemy.fixture = love.physics.newFixture(enemy.body, enemy.shape, 2)
   enemy.fixture:setRestitution(0.1)
   enemy.fixture:setUserData(enemy)
+  enemy.fixture:setCategory(3)
+  enemy.frame = currentFrame
   enemy.body:setLinearDamping(0.4)
   enemy.body:setLinearVelocity(0, 0)
   enemy.body:setMass(0.1)
@@ -97,6 +99,7 @@ function constructors.newBullet(x, y)
   bullet.fixture:setUserData(bullet)
   bullet.fixture:setCategory(2)
   bullet.fixture:setMask(2)
+  bullet.frame = currentFrame
   bullet.draw = function(self) d.gradientLine(d.objectData(self), 5, 3, 0.5) end
   return bullet
 end
@@ -159,6 +162,8 @@ function constructors.newPlayer(x, y)
   player.fixture:setRestitution(0.1)
   player.body:setLinearDamping(10)
   player.fixture:setUserData(player)
+  player.fixture:setCategory(5)
+  player.frame = currentFrame
   player.draw = function(self) d.gradientLine(d.objectData(self), 9, 7, 1) end
   return player
 end
@@ -176,9 +181,40 @@ function constructors.newGround(x, y, width, height)
   ground.shape = love.physics.newRectangleShape(width, height)
   ground.fixture = love.physics.newFixture(ground.body, ground.shape)
   ground.fixture:setUserData(ground)
+  ground.frame = currentFrame
   ground.color = {72, 160, 14}
   ground.draw = function(self) d.gradientLine(d.objectData(self), 9, 7, 1) end
   return ground
+end
+
+function constructors.newEnemyBullet(x, y) -- this is a test
+  local enemyBullet = constructors.newBullet(x, y)
+  enemyBullet.kind = 'badbullet'
+  enemyBullet.color = {10, 10, 10}
+  enemyBullet.collisions = {}
+  enemyBullet.body:setLinearVelocity(20, 20)
+  return enemyBullet
+end
+
+function constructors.newBarrier(x, y, radius)
+  local barrier = {}
+  barrier.kind = 'passive'
+  barrier.collisions = {}
+
+  --get the settings from the world, if there are any.
+  if level ~= nil then level:setObject(barrier) end
+
+  barrier.health = 1
+  barrier.body = love.physics.newBody(world, x, y, 'static')
+  barrier.shape = love.physics.newCircleShape(radius)
+  barrier.fixture = love.physics.newFixture(barrier.body, barrier.shape)
+  barrier.fixture:setUserData(barrier)
+  barrier.frame = currentFrame
+  barrier.fixture:setCategory(4)
+  barrier.fixture:setMask(5)
+  barrier.color = {30, 30, 30}
+  barrier.draw = function(self) d.gradientLine(d.objectData(self), 9, 7, 1) end
+  return barrier
 end
 
 function constructors.newBorder(left, top, right, bottom)
@@ -203,6 +239,7 @@ function constructors.newBorder(left, top, right, bottom)
   border.shape = love.physics.newChainShape(true, points)
   border.fixture = love.physics.newFixture(border.body, border.shape)
   border.fixture:setUserData(border)
+  border.frame = currentFrame
   border.color = {110, 94, 255}
   border.draw = function(self) d.gradientLine(d.objectData(self), 12, 10, 1) end
   return border
@@ -265,19 +302,5 @@ function constructors.newExplosion(x, y)
   end
   return explosion
 end
-
--- destructors
-
--- function constructors.enemyDestroy(self)
---   if self.health <= 0 then
---     for i = 1, 16 do
---       table.insert(particles, constructors.newSpark(self.body:getX(), self.body:getY()))
---     end
---     self.body:destroy()
---     objects[currentKey] = nil
---   end
--- end
-
---function constructors.enemyDestroy
 
 return constructors

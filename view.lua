@@ -4,10 +4,10 @@ local t = require "transformations"
 local view = {}
 
 function view.setOffsets()
-  xWorldOffset = ((worldWidth * zoomAmount / 2) - cameraX) * (1 / worldSize) + totalX
-  yWorldOffset = ((worldHeight * zoomAmount / 2) - cameraY) * (1 / worldSize) + totalY
-  xScreenOffset = t.worldToScreenScalar(xWorldOffset) * (1 / worldSize)
-  yScreenOffset = t.worldToScreenScalar(yWorldOffset) * (1 / worldSize)
+  xWorldOffset = ((worldWidth * depthScalar / 2) - cameraX) * (1 / frameSize) + totalX
+  yWorldOffset = ((worldHeight * depthScalar / 2) - cameraY) * (1 / frameSize) + totalY
+  xScreenOffset = t.worldToScreenScalar(xWorldOffset) * (1 / frameSize)
+  yScreenOffset = t.worldToScreenScalar(yWorldOffset) * (1 / frameSize)
 end
 
 function view.panCamera(dx, dy)
@@ -23,12 +23,12 @@ function view.positionCamera(x, y)
 end
 
 function view.zoomCamera(dz)
-  zoomAmount = zoomAmount + dz * gdt
+  depthScalar = depthScalar + dz * gdt
   view.setOffsets()
 end
 
 function view.scaleCamera(z)
-  zoomAmount = z
+  depthScalar = z
   view.setOffsets()
 end
 
