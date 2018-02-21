@@ -4,6 +4,7 @@ local b = require "behaviors"
 local d = require "draw"
 local h = require "helpers"
 local t = require "transformations"
+local f = require "framer"
 
 local constructors = {}
 
@@ -19,6 +20,7 @@ function constructors.newLevel()
       destroy = b.enemyDestroy,
       collisions = {bullet = {i.reduceHealth,  i.setPulse, i.eliminateOther}},
       behaviors = {b.followf, b.reducePulse},
+      health = 1
     },
     bullet = {
       destroy = b.bulletDestroy,
@@ -51,8 +53,7 @@ function constructors.newEnemyBasic(x, y, level)
   enemy.collisions = {bullet = {i.reduceHealth, i.changeColor, i.setPulse, i.eliminateOther}}
   enemy.behaviors = {b.followf, b.reducePulse}
 
-  --get the settings from the world, if there are any.
-  if level ~= nil then level:setObject(enemy) end
+
 
   enemy.health = 10
   enemy.body = love.physics.newBody(world, x, y, 'dynamic')
@@ -66,6 +67,9 @@ function constructors.newEnemyBasic(x, y, level)
   enemy.fuzziness = 1
   enemy.pulse = enemy.fuzziness
   enemy.draw = function(self) d.gradientLine(d.objectData(self), 10, 8, self.pulse, 50) end
+
+  --get the settings from the world, if there are any.
+  -- if level ~= nil then level:setObject(enemy) end
   return enemy
 end
 
@@ -84,7 +88,7 @@ function constructors.newBullet(x, y)
   bullet.collisions = {enemy = {}}
 
   --get the settings from the world, if there are any.
-  if level ~= nil then level:setObject(bullet) end
+  -- if level ~= nil then level:setObject(bullet) end
 
   bullet.health = 1
   bullet.lifetime = 10
@@ -101,6 +105,14 @@ function constructors.newBullet(x, y)
   return bullet
 end
 
+function constructors.newPickup(x, y)
+  local pickup = constructors.newBullet(x, y)
+  pickup.kind = 'collectable'
+  pickup.color = {0, 255, 0}
+  pickup.fixture:setSensor(true)
+  return pickup
+end
+
 function constructors.newPlayer(x, y)
   local player = {}
   player.kind = 'player'
@@ -112,7 +124,7 @@ function constructors.newPlayer(x, y)
   player.canShootTimer = player.canShootTimerMax
 
   --get the settings from the world, if there are any.
-  if level ~= nil then level:setObject(player) end
+  --if level ~= nil then level:setObject(player) end
 
   player.health = 1
   -- player.aim = 0
@@ -149,7 +161,8 @@ function constructors.newPlayer(x, y)
       if self.canShoot then
         local bullet = constructors.newBullet(bulletx, bullety)
         bullet.body:setLinearVelocity(shotx * 400, shoty * 400)
-        table.insert(objects, bullet)
+        --table.insert(objects, bullet)
+        f.create(self.frame, bullet)
         self.canShootTimer = self.canShootTimerMax
         self.canShoot = false
       end
@@ -169,7 +182,7 @@ function constructors.newGround(x, y, width, height)
   ground.collisions = {}
 
   --get the settings from the world, if there are any.
-  if level ~= nil then level:setObject(ground) end
+  --if level ~= nil then level:setObject(ground) end
 
   ground.health = 1
   ground.body = love.physics.newBody(world, x, y, 'static')
@@ -187,7 +200,7 @@ function constructors.newBorder(left, top, right, bottom)
   border.collisions = {}
 
   --get the settings from the world, if there are any.
-  if level ~= nil then level:setObject(border) end
+  --if level ~= nil then level:setObject(border) end
 
   border.health = 1
   border.body = love.physics.newBody(world, x, y, 'static') -- change x, y
@@ -215,7 +228,7 @@ function constructors.newSpark(x, y)
   spark.kind = 'spark'
 
   --get the settings from the world, if there are any.
-  if level ~= nil then level:setObject(spark) end
+  --if level ~= nil then level:setObject(spark) end
 
   spark.x = x
   spark.y = y
@@ -242,7 +255,7 @@ function constructors.newExplosion(x, y)
   explosion.kind = 'explosion'
 
   --get the settings from the world, if there are any.
-  if level ~= nil then level:setObject(explosion) end
+  --if level ~= nil then level:setObject(explosion) end
 
   explosion.x = x
   explosion.y = y

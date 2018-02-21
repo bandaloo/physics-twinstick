@@ -3,6 +3,7 @@ local h = require "helpers"
 local d = require "draw"
 local v = require "view"
 local t = require "transformations"
+local f = require "framer"
 
 debug = true
 
@@ -15,6 +16,8 @@ function love.load(arg)
 
   worldWidth = 1280
   worldHeight = 720
+
+  -- would like to get rid of globals
 
   cameraX = worldWidth / 2
   cameraY = worldHeight / 2
@@ -50,10 +53,14 @@ function love.load(arg)
 
   frames = {}
 
+  level = c.newLevel()
+
   frame1 = {}
   frame1.objects = {}
   frame1.particles = {}
+  frame1.creates = {}
   frame1.world = world1
+  frame1.level = level
   frame1.totalX = 0
   frame1.totalY = 0
   frame1.size = 1
@@ -66,16 +73,11 @@ function love.load(arg)
   table.insert(frames, frame1)
 
   -- objects.ground = c.newGround(screenWidth / 2, screenHeight - 20, screenWidth, 20)
-  level = c.newLevel()
-  objects.border = c.newBorder(borderWidth, borderHeight, worldWidth - borderWidth, worldHeight - borderHeight)
-  objects.player = c.newPlayer(worldWidth / 2, worldHeight / 2)
+  f.create(frame1, c.newBorder(borderWidth, borderHeight, worldWidth - borderWidth, worldHeight - borderHeight), 'border')
+  f.create(frame1, c.newPlayer(worldWidth / 2, worldHeight / 2), 'player')
   for i = 0, 10 do
-    table.insert(objects, c.newEnemyBasic(80 + i * 60, 300))
+    f.create(frame1, c.newEnemyBasic(80 + i * 60, 300))
   end
-  objects.enemy = c.newEnemyBasic(100, 100, level)
-  objects.enemy2 = c.newEnemyBasic(100, 150)
-  objects.enemy3 = c.newEnemyBasic(150, 100, level)
-  objects.enemyScared = c.newEnemyBasic(200, 200)
 
   world2 = love.physics.newWorld(0, 0, true)
   world2:setCallbacks(beginContact)
@@ -83,6 +85,7 @@ function love.load(arg)
   frame2 = {}
   frame2.objects = {}
   frame2.particles = {}
+  frame2.creates = {}
   frame2.world = world2
   frame2.totalX = 0
   frame2.totalY = 0
@@ -95,10 +98,10 @@ function love.load(arg)
 
   table.insert(frames, frame2)
 
-  objects.border = c.newBorder(borderWidth, borderHeight, worldWidth - borderWidth, worldHeight - borderHeight)
+  f.create(frame2, c.newBorder(borderWidth, borderHeight, worldWidth - borderWidth, worldHeight - borderHeight), 'border')
 
-  objects.player = c.newPlayer(200, 200)
-  objects.enemy = c.newEnemyBasic(100, 100)
+  f.create(frame2, c.newPlayer(200, 200), 'player')
+  f.create(frame2, c.newEnemyBasic(100, 100), 'enemy')
 
   world3 = love.physics.newWorld(0, 0, true)
   world3:setCallbacks(beginContact)
@@ -106,6 +109,7 @@ function love.load(arg)
   frame3 = {}
   frame3.objects = {}
   frame3.particles = {}
+  frame3.creates = {}
   frame3.world = world3
   frame3.totalX = 0
   frame3.totalY = 0
@@ -118,11 +122,10 @@ function love.load(arg)
 
   table.insert(frames, frame3)
 
-  objects.border = c.newBorder(borderWidth, borderHeight, worldWidth - borderWidth, worldHeight - borderHeight)
-  objects.border.color = {20, 100, 30}
+  f.create(frame3, c.newBorder(borderWidth, borderHeight, worldWidth - borderWidth, worldHeight - borderHeight), 'border')
 
-  objects.player = c.newPlayer(200, 200)
-  objects.enemy = c.newEnemyBasic(100, 100)
+  f.create(frame3, c.newPlayer(200, 200), 'player')
+  f.create(frame3, c.newEnemyBasic(100, 100), 'enemy')
 
   table.sort(frames, function(f1, f2) return f1.depth > f2.depth end)
 end
@@ -137,6 +140,7 @@ function love.update(dt)
     world = frame.world
     world:update(dt) -- maybe update world after this stuff has been done
     setFrameInfo(frame)
+    f.spawn(frame)
     for key, particle in pairs(particles) do
       particle.x = particle.x + particle.xvel * dt
       particle.y = particle.y + particle.yvel * dt
