@@ -9,7 +9,9 @@ end
 
 function interactions.reduceHealth(self, other)
   --table.insert(particles, c.newSpark(self.body:getX(), self.body:getY()))
-  table.insert(self.frame.creates, function() return c.newPickup(self.body:getX(), self.body:getY()) end)
+  table.insert(creates, function()
+    return c.newPickup(self.body:getX(), self.body:getY())
+  end)
   self.health = self.health - 1
 end
 

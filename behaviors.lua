@@ -8,8 +8,8 @@ function behaviors.link(module)
 end
 
 function behaviors.followv(self)
-  if object.player ~= nil then
-    local x, y = h.normalToObject(self, object.player)
+  if objects.player ~= nil then
+    local x, y = h.normalToObject(self, objects.player)
     self.body:setLinearVelocity(x * 30, y * 30)
   end
 end

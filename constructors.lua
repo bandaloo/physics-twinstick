@@ -16,7 +16,7 @@ function constructors.newLevel()
   level.kind = 'level'
   level.solidBoundries = true
   level.relationships = {
-    enemy = {
+    enemy = { -- have a way to add onto code of object
       destroy = b.enemyDestroy,
       collisions = {bullet = {i.reduceHealth,  i.setPulse, i.eliminateOther}},
       behaviors = {b.followf, b.reducePulse},
@@ -162,7 +162,7 @@ function constructors.newPlayer(x, y)
         local bullet = constructors.newBullet(bulletx, bullety)
         bullet.body:setLinearVelocity(shotx * 400, shoty * 400)
         --table.insert(objects, bullet)
-        f.create(self.frame, bullet)
+        table.insert(objects, bullet)
         self.canShootTimer = self.canShootTimerMax
         self.canShoot = false
       end

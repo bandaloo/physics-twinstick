@@ -13,6 +13,7 @@ end
 function framer.setFrameInfo(frame)
   objects = frame.objects
   particles = frame.particles
+  creates = frame.creates
   totalX = frame.totalX
   totalY = frame.totalY
   frameSize = frame.size

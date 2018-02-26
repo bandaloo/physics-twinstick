@@ -138,8 +138,8 @@ function love.update(dt)
   -- worldToScreenRatio = worldToScreenRatio + dt * 0.1 -- this is just a test get rid of this
   for i, frame in ipairs(frames) do
     world = frame.world
-    world:update(dt) -- maybe update world after this stuff has been done
     setFrameInfo(frame)
+    world:update(dt) -- maybe update world after this stuff has been done
     f.spawn(frame)
     for key, particle in pairs(particles) do
       particle.x = particle.x + particle.xvel * dt
@@ -184,7 +184,7 @@ function love.draw(dt)
   for i, frame in ipairs(frames) do
     --world = frame.world
     setFrameInfo(frame)
-    if i == 1 then
+    if i == 3 then
       local camx, camy = frames[3].objects.player.body:getPosition() -- this is a test get rid of this later
       v.positionCamera(totalX + camx, totalY + camy)
     end
@@ -224,6 +224,7 @@ end
 function setFrameInfo(frame)
   objects = frame.objects
   particles = frame.particles
+  creates = frame.creates
   totalX = frame.totalX
   totalY = frame.totalY
   worldSize = frame.size
